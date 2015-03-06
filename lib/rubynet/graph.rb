@@ -16,50 +16,76 @@ module Rubynet
     end
 
     def name
-      data.fetch(:name, '')
+      self.data.fetch(:name, '')
     end
 
     def name=(name)
-      data[:name] = name
+      self.data[:name] = name
+    end
+
+    def [](n)
+      self.adj[n]
+    end
+
+    def size
+      self.node.size
     end
 
     def to_s
-      name
+      self.name
     end
 
     def each(&block)
-      nodes.each(&block)
+      self.node.keys.each(&block)
     end
 
-    def add_node(n, attr_dict=nil,**attr)
+    def each_pair(&block)
+      self.node.each(&block)
+    end
+
+    def nodes(data = false)
+      data ? self.node.to_a : self.node.keys
+    end
+
+    def add_node(_node, attr_dict=nil,**attr)
       if attr_dict.nil?
         attr_dict = attr
       else
-        # begin
-        #   attr_dict.merge(attr)
-        # rescue StandardError
-        #   raise RubynetError, 'attr_dict argument must be a hash-like type'
-        # end
+        begin
+          attr_dict.merge(attr)
+        rescue StandardError
+          raise RubynetError, 'attr_dict argument must be a hash-like type'
+        end
       end
-      if node.include?(n)
-        node[n].merge!(attr_dict)
+      if self.node.include?(_node)
+        self.node[_node].merge!(attr_dict)
       else
-        adj[n] = {}
-        node[n] = attr_dict
+        self.adj[_node] = {}
+        self.node[_node] = attr_dict
+      end
+    end
+
+    def add_nodes(_nodes, **attr)
+      _nodes.each do |_node|
+        if _node.respond_to?(:each)
+          n, n_attr = _node[]
+          if self.node.key?(n)
+            self.node[n].merge!(attr).merge!(n_attr)
+          else
+            self.adj[n] = { }
+            self.node[n] = attr.merge(n_attr)
+          end
+        elsif self.node.key? _node
+          self.node[_node].merge!(attr)
+        else
+          self.adj[_node] = {}
+          self.node[_node] = {}.merge!(attr)
+        end
       end
 
     end
-    def nodes(data = false)
-      data ? @node.keys : @node.map {|k,v| [k, v]}
-    end
+
 
   end
 
 end
-
-g = Rubynet::Graph.new(name:'yeah')
-g.add_node(1, name:'1')
-puts g
-puts g.node[1]
-g.add_node(1, name:'2')
-puts g.node[1]
