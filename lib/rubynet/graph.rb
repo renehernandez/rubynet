@@ -36,16 +36,26 @@ module Rubynet
         format('Container: %{dict}', dict: @objects)
       end
 
+      def hash
+        @objects.hash
+      end
+
+      def ==(other_container)
+        self.hash.eql?(other_container.hash)
+      end
+
+      alias eql? ==
+
     end
 
     attr_accessor :data, :nodes, :adj
 
-    def initialize(input=nil, **attr)
+    def initialize(**attr)
       self.data = {}
       self.nodes = Container.new(self.node_factory)
       self.adj = Container.new(self.adj_factory)
 
-      Conversion.make_graph(input, self) if input
+      # Conversion.make_graph(input, self) if input
       self.data.merge!(attr)
     end
 
@@ -65,12 +75,12 @@ module Rubynet
       self.data[:name] = name
     end
 
-    def node?(_node)
-      self.nodes.key?(_node)
-    end
-
     def to_s
       self.name
+    end
+
+    def node?(_node)
+      self.nodes.key?(_node)
     end
 
     def add_node(_node, attr_dict=nil,**attr)
