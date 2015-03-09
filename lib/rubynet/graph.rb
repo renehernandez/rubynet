@@ -88,7 +88,7 @@ module Rubynet
         attr_dict = attr
       else
         begin
-          attr_dict.merge!(attr)
+          attr_dict.merge!(attr) {|_k, v1, _v2| v1}
         rescue StandardError
           raise RubynetError, 'attr_dict argument must be a hash-like type'
         end
@@ -115,7 +115,7 @@ module Rubynet
           self.nodes[_node].merge!(attr)
         else
           self.adj[_node] = adj_factory
-          self.nodes[_node] = {}.merge!(attr)
+          self.nodes[_node] = node_factory.merge(attr)
         end
       end
 

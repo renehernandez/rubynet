@@ -66,9 +66,8 @@ RSpec.describe Rubynet::Graph do
   describe '#add_node' do
     let!(:size) { graph.nodes.size}
 
-    context 'with no attributes' do
+    context 'without attributes' do
       before { graph.add_node(:dummy)}
-      let(:container) { Rubynet::Graph::Container.new }
 
       it { expect(graph.node?(:dummy)).to be_truthy }
       it { expect(graph.nodes.size).to eql(size + 1) }
@@ -76,12 +75,85 @@ RSpec.describe Rubynet::Graph do
     end
 
     context 'with attr_dict' do
-      
+      before { graph.add_node(243, { name: 'dummy', weight: 1 }) }
+
+      it { expect(graph.node?(243)).to be_truthy }
+      it { expect(graph.nodes.size).to eql(size + 1) }
+      it { expect(graph.nodes[243]).to eql({weight: 1, name:'dummy'}) }
+    end
+
+    context 'with attr_dict and **attr' do
+      before { graph.add_node(50, {name:'not so dummy', weight: 1},
+                              name: 'dummy', weight: 10) }
+
+      it { expect(graph.node?(50)).to be_truthy }
+      it { expect(graph.nodes.size).to eql(size + 1) }
+      it 'attr_dict has priority over **attr' do
+        expect(graph.nodes[50]).to eql({weight: 1, name:'not so dummy'})
+      end
+    end
+
+    context 'with existing nodes in graph' do
+      before { graph.add_nodes(1..3) }
+      let(:node) { 'Hello world!' }
+      let!(:length) { graph.nodes.size }
+      before { graph.add_node(node, { name: node, size: node.size }) }
+
+      it { expect(graph.nodes.size).to eql(length + 1) }
+      it { expect(graph.nodes[2]).to eql(graph.node_factory) }
+      it { expect(graph.nodes[node]).to eql({ name: node, size: node.size }) }
     end
 
   end
 
   describe '#add_nodes' do
+    let(:list) { 1..5 }
+
+    context 'without attributes' do
+      before {graph.add_nodes(list)}
+
+      it { expect(graph.nodes.size).to eql(list.size) }
+      it { expect(graph.node?(20)).to be_falsey }
+      it { expect(graph.nodes[4]).to eql(graph.node_factory) }
+    end
+
+    context 'with **attr' do
+      before { graph.add_nodes(list, name:'we all are dummies', weigth:2,
+                              height: 10) }
+
+      it { expect(graph.nodes.size).to eql(list.size) }
+      it { expect(graph.nodes[4]).to eql({name:'we all are dummies', weigth:2,
+                                          height: 10}) }
+      it { expect(graph.node?(3)).to be_truthy }
+    end
+
+    context 'with custom attributes and **attr(a.k.a common attributes)' do
+      before do
+        nodes = list.map { |i| [i, { name: i.to_s }] }
+        common = { name: 'black', weight: 2.5 }
+        graph.add_nodes(nodes, common)
+      end
+
+      it { expect(graph.nodes.size).to eql(list.size) }
+      it { expect(graph.nodes[3]).to eql({ name: '3', weight: 2.5 }) }
+    end
+
+    context 'when adding new nodes, previous node attributes are not
+            modified' do
+      before do
+        nodes = list.map { |i| [i, { name: i.to_s }] }
+        graph.add_nodes(nodes)
+      end
+
+      before { graph.add_nodes(10..20, name: 'new name',
+                               date: DateTime.new(2015,2,3)) }
+
+
+      it { expect(graph.nodes.size).to eql(list.size + (10..20).size) }
+      it { expect(graph.nodes[3]).to eql({ name: '3'}) }
+      it { expect(graph.nodes[13]).to eql({ name: 'new name',
+                                            date: DateTime.new(2015,2,3) }) }
+    end
 
   end
 
@@ -89,7 +161,7 @@ RSpec.describe Rubynet::Graph do
     before { graph.add_node(2) }
 
     it { expect(graph.node?(2)).to be_truthy }
-    it { expect(graph.node?('20')).to be_falsey }
+    it { expect(graph.node?('2')).to be_falsey }
 
   end
 
