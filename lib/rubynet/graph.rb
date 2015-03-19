@@ -84,6 +84,15 @@ module Rubynet
 
     end
 
+    def remove_nodes(_nodes)
+      unless _nodes.respond_to?(:each)
+        raise RubynetError, '_nodes argument must respond to container each
+                            method'
+      end
+
+      _nodes.each {|_node| self.remove_node(_node) }
+    end
+
     private
 
     def create_or_update_node(_node, attr)
