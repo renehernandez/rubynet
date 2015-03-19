@@ -53,38 +53,30 @@ module Rubynet
           raise RubynetError, 'attr_dict argument must be a hash-like type'
         end
       end
-      if self.node?(_node)
-        self.nodes[_node].merge!(attr_dict)
-      else
-        self.adj[_node] = self.adj_factory
-        self.nodes[_node] = attr_dict
-      end
+      create_or_update_node(_node, attr_dict)
     end
 
     def add_nodes(_nodes, **attr)
       _nodes.each do |_node|
         if _node.respond_to?(:each)
           n, n_attr = _node
-          if self.node?(n)
-            self.nodes[n].merge!(attr).merge!(n_attr)
-          else
-            self.adj[n] = self.adj_factory
-            self.nodes[n] = attr.merge(n_attr)
+          begin
+            n_attr.merge!(attr) {|_k, v1, _v2| v1}
+          rescue StandardError
+            raise RubynetError, 'attr_dict argument must be a hash-like type'
           end
-        elsif self.node?(_node)
-          self.nodes[_node].merge!(attr)
+          create_or_update_node(n, n_attr)
         else
-          self.adj[_node] = self.adj_factory
-          self.nodes[_node] = self.node_factory.merge(attr)
+          create_or_update_node(_node, attr)
         end
       end
 
     end
 
     def remove_node(_node)
-      self.nodes.delete(_node)
-
       return unless self.adj.key?(_node)
+
+      self.nodes.delete(_node)
 
       self.adj.delete(_node).each_key do |key|
         self.adj[key].delete(_node)
@@ -92,6 +84,16 @@ module Rubynet
 
     end
 
+    private
+
+    def create_or_update_node(_node, attr)
+      if self.node?(_node)
+        self.nodes[_node].merge!(attr)
+      else
+        self.nodes[_node] = attr
+        self.adj[_node] = self.adj_factory
+      end
+    end
 
   end
 
