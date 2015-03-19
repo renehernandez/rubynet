@@ -158,10 +158,21 @@ RSpec.describe Rubynet::Graph do
   end
 
   describe '#node?' do
-    before { graph.add_node(2) }
+    context 'when adding a single node' do
+      before { graph.add_node(2) }
 
-    it { expect(graph.node?(2)).to be_truthy }
-    it { expect(graph.node?('2')).to be_falsey }
+      it { expect(graph.node?(2)).to be_truthy }
+      it { expect(graph.node?('2')).to be_falsey }
+
+    end
+
+    context 'when adding multiple nodes' do
+      before { graph.add_nodes(5.times.map { |i| [i.to_s, name: 'dummy'] },
+                               weight: 1)}
+
+      it { expect(graph.node?('4')).to be_truthy }
+      it { expect(graph.node?(10)).to be_falsey }
+    end
 
   end
 
