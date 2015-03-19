@@ -4,56 +4,12 @@ module Rubynet
 
   class Graph
 
-    class Container
-
-      def initialize(generated = nil)
-        @objects = generated ? generated : {}
-      end
-
-      def method_missing(name, *args, &block)
-        if @objects.class.instance_methods(true).include?(name)
-          self.class.class_eval %Q|
-            def #{name}(*args, &block)
-              @objects.#{name}(*args, &block)
-            end
-          |
-          send(name, *args, &block)
-        end
-      end
-
-      def []=(key, value)
-        attr = {}
-        begin
-          attr.merge!(value)
-        rescue StandardError
-          raise RubynetError, 'value argument must be a hash-like type'
-        end
-
-        @objects[key] = attr
-      end
-
-      def to_s
-        format('Container: %{dict}', dict: @objects)
-      end
-
-      def hash
-        @objects.hash
-      end
-
-      def ==(other_container)
-        self.hash.eql?(other_container.hash)
-      end
-
-      alias eql? ==
-
-    end
-
     attr_accessor :data, :nodes, :adj
 
     def initialize(**attr)
       self.data = {}
-      self.nodes = Container.new(self.node_factory)
-      self.adj = Container.new(self.adj_factory)
+      self.nodes = self.node_factory
+      self.adj = self.node_factory
 
       # Conversion.make_graph(input, self) if input
       self.data.merge!(attr)

@@ -5,13 +5,12 @@ RSpec.describe Rubynet::Graph do
   subject(:graph) { Rubynet::Graph.new }
 
   describe '#initialize' do
-    let(:container) { Rubynet::Graph::Container.new}
 
     context 'with empty created graph' do
 
       it { expect(graph.data).to eql({}) }
-      it { expect(graph.nodes).to eql(container) }
-      it { expect(graph.adj).to eql(container) }
+      it { expect(graph.nodes).to eql(graph.node_factory) }
+      it { expect(graph.adj).to eql(graph.node_factory) }
       it { expect(graph.name).to eql('') }
       it { expect(graph.to_s).to eql('') }
     end
