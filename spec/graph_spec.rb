@@ -70,7 +70,7 @@ RSpec.describe Rubynet::Graph do
 
       it { expect(graph.node?(:dummy)).to be_truthy }
       it { expect(graph.nodes.size).to eql(size + 1) }
-      it { expect(graph.nodes[:dummy]).to eql(graph.node_factory) }
+      it { expect(graph.nodes[:dummy]).to eql({}) }
     end
 
     context 'with attr_dict' do
@@ -93,13 +93,18 @@ RSpec.describe Rubynet::Graph do
     end
 
     context 'with existing nodes in graph' do
-      before { graph.add_nodes(1..3) }
+      subject(:graph) do
+        graph = Rubynet::Graph.new
+        graph.add_nodes(1..3)
+        graph
+      end
+
       let(:node) { 'Hello world!' }
       let!(:length) { graph.nodes.size }
       before { graph.add_node(node, { name: node, size: node.size }) }
 
       it { expect(graph.nodes.size).to eql(length + 1) }
-      it { expect(graph.nodes[2]).to eql(graph.node_factory) }
+      it { expect(graph.nodes[2]).to eql({ }) }
       it { expect(graph.nodes[node]).to eql({ name: node, size: node.size }) }
     end
 
@@ -139,9 +144,11 @@ RSpec.describe Rubynet::Graph do
 
     context 'when adding new nodes, previous node attributes are not
             modified' do
-      before do
+      subject(:graph) do
+        graph = Rubynet::Graph.new
         nodes = list.map { |i| [i, { name: i.to_s }] }
         graph.add_nodes(nodes)
+        graph
       end
 
       before { graph.add_nodes(10..20, name: 'new name',
@@ -195,6 +202,90 @@ RSpec.describe Rubynet::Graph do
 
       it { expect(graph.nodes_size).to eql(length + list.size) }
     end
+
+  end
+
+  describe '#add_edge' do
+    let!(:size) { graph.nodes_size }
+
+    context 'with no attributes' do
+      before { graph.add_edge(10, 'test') }
+
+      it { expect(graph.nodes_size).to eql(size + 2) }
+      it { expect(graph.node?(10)).to be_truthy }
+      it { expect(graph.node?('test')).to be_truthy }
+      it 'edge has the same information from both nodes' do
+        expect(graph.adj[10]['test']).to eql({})
+        expect(graph.adj['test'][10]).to eql({})
+      end
+    end
+
+    context 'with attr_dict' do
+      before { graph.add_edge(243, 'dummy', { name: 'dummy', weight: 1 }) }
+
+      it { expect(graph.node?(243)).to be_truthy }
+      it { expect(graph.node?('dummy')).to be_truthy }
+      it { expect(graph.nodes_size).to eql(size + 2) }
+      it { expect(graph.adj[243]).to eql({ 'dummy' => { name: 'dummy', weight: 1 } }) }
+      it { expect(graph.adj['dummy']).to eql({ 243 => { name: 'dummy', weight: 1 } }) }
+      it 'edge has the same information from both nodes' do
+        expect(graph.adj[243]['dummy']).to eql({ weight: 1, name:'dummy' })
+        expect(graph.adj['dummy'][243]).to eql({ weight: 1, name:'dummy' })
+      end
+    end
+
+    context 'with attr_dict and **attr' do
+      before { graph.add_edge(50, :rene, { name:'not so dummy', weight: 1 },
+                              name: 'dummy', weight: 10) }
+
+      it { expect(graph.node?(50)).to be_truthy }
+      it { expect(graph.node?(:rene)).to be_truthy }
+      it { expect(graph.nodes_size).to eql(size + 2) }
+      it 'attr_dict has priority over **attr' do
+        expect(graph.adj[50][:rene]).to eql({ weight: 1, name:'not so dummy' })
+        expect(graph.adj[:rene][50]).to eql({ weight: 1, name:'not so dummy' })
+      end
+    end
+
+    context 'with existing edges in graph' do
+      subject(:graph) do
+        graph = Rubynet::Graph.new
+        graph.add_edges((1..3).map {|i| [i, i + 1]})
+        graph
+      end
+
+      let(:u) { :hello }
+      let(:v) { :world }
+      let!(:length) { graph.nodes_size }
+      before { graph.add_edge(u, v, { name: u.to_s + v.to_s,
+                                      size: 10 }) }
+
+      it { expect(graph.nodes_size).to eql(length + 2) }
+      it { expect(graph.nodes[2]).to eql({}) }
+      it 'edge has the same information from both nodes' do
+        expect(graph.adj[u][v]).to eql({ name: u.to_s + v.to_s,
+                                            size: 10 })
+        expect(graph.adj[v][u]).to eql({ name: u.to_s + v.to_s,
+                                         size: 10 })
+      end
+    end
+
+    context 'when modifying adjacency list' do
+      subject(:graph) do
+        graph = Rubynet::Graph.new
+        graph.add_edge(10, 20)
+        graph
+      end
+
+      let!(:length) { graph.nodes_size }
+      before { graph.add_edge(20, 30) }
+
+      it { expect(graph.nodes_size).to eql(length + 1) }
+      it { expect(graph.adj[10]).to eql({ 20 => {} })}
+      it { expect(graph.adj[20]).to eql({ 10 => {}, 30 => {} })}
+      it { expect(graph.adj[30]).to eql({ 20 => {} })}
+    end
+
 
   end
 

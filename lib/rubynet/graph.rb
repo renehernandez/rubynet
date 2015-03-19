@@ -118,7 +118,7 @@ module Rubynet
       end
       unless self.nodes.key?(v)
         self.nodes[v] = { }
-        self.nodes[v] = { }
+        self.adj[v] = self.adj_factory
       end
 
       e_attr = self.adj[u].fetch(v, self.edge_factory).merge(attr_dict)
