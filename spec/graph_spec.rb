@@ -182,11 +182,10 @@ RSpec.describe Rubynet::Graph do
       it { expect(graph.nodes_size).to eql(0) }
     end
 
-
     context 'when adding a node' do
       let!(:length) { graph.nodes_size }
       before { graph.add_node('yummy', weight: 10) }
-      
+
       it { expect(graph.nodes_size).to eql(length + 1) }
     end
 

@@ -100,7 +100,7 @@ module Rubynet
       if self.node?(_node)
         self.nodes[_node].merge!(attr_dict)
       else
-        self.adj[_node] = adj_factory
+        self.adj[_node] = self.adj_factory
         self.nodes[_node] = attr_dict
       end
     end
@@ -112,15 +112,26 @@ module Rubynet
           if self.node?(n)
             self.nodes[n].merge!(attr).merge!(n_attr)
           else
-            self.adj[n] = adj_factory
+            self.adj[n] = self.adj_factory
             self.nodes[n] = attr.merge(n_attr)
           end
         elsif self.node?(_node)
           self.nodes[_node].merge!(attr)
         else
-          self.adj[_node] = adj_factory
-          self.nodes[_node] = node_factory.merge(attr)
+          self.adj[_node] = self.adj_factory
+          self.nodes[_node] = self.node_factory.merge(attr)
         end
+      end
+
+    end
+
+    def remove_node(_node)
+      self.nodes.delete(_node)
+
+      return unless self.adj.key?(_node)
+
+      self.adj.delete(_node).each_key do |key|
+        self.adj[key].delete(_node)
       end
 
     end
