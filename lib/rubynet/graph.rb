@@ -16,11 +16,15 @@ module Rubynet
     end
 
     def adj_factory
-      {}
+      { }
     end
 
     def node_factory
-      {}
+      { }
+    end
+
+    def edge_factory
+      { }
     end
 
     def name
@@ -62,6 +66,10 @@ module Rubynet
     end
 
     def add_nodes(_nodes, **attr)
+      unless _nodes.respond_to?(:each)
+        raise RubynetError, '_nodes argument must respond to container each
+                            method'
+      end
       _nodes.each do |_node|
         if _node.respond_to?(:each)
           n, n_attr = _node
@@ -91,6 +99,51 @@ module Rubynet
       end
 
       _nodes.each {|_node| self.remove_node(_node) }
+    end
+
+    def add_edge(u, v, attr_dict = nil, **attr)
+      if attr_dict.nil?
+        attr_dict = attr
+      else
+        begin
+          attr_dict.merge!(attr) {|_k, v1, _v2| v1}
+        rescue StandardError
+          raise RubynetError, 'attr_dict argument must be a hash-like type'
+        end
+      end
+
+      unless self.nodes.key?(u)
+        self.nodes[u] = { }
+        self.adj[u] = self.adj_factory
+      end
+      unless self.nodes.key?(v)
+        self.nodes[v] = { }
+        self.nodes[v] = { }
+      end
+
+      e_attr = self.adj[u].fetch(v, self.edge_factory).merge(attr_dict)
+      self.adj[u][v] = self.adj[v][u] = e_attr
+    end
+
+    def add_edges(_edges, **attr)
+      unless _edges.respond_to?(:each)
+        raise RubynetError, '_edges argument must respond to container each
+                            method'
+      end
+
+      _edges.each do |_edge|
+        case _edge.size
+        when 2
+          u, v = _edge
+          self.add_edge(u, v, attr)
+        when 3
+          u, v, e_attr = _edge
+          self.add_edge(u, v, e_attr, attr)
+        else
+          raise RubynetError, format('Edge tuple %(e) must be a 2-tuple or
+                                    3-tuple', e: _edge)
+        end
+      end
     end
 
   end
