@@ -83,6 +83,10 @@ module Rubynet
       self.nodes.key?(_node)
     end
 
+    def nodes_size
+      self.nodes.size
+    end
+
     def add_node(_node, attr_dict=nil,**attr)
       if attr_dict.nil?
         attr_dict = attr

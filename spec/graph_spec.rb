@@ -176,4 +176,28 @@ RSpec.describe Rubynet::Graph do
 
   end
 
+  describe '#nodes_size' do
+    context 'with empty graph' do
+
+      it { expect(graph.nodes_size).to eql(0) }
+    end
+
+
+    context 'when adding a node' do
+      let!(:length) { graph.nodes_size }
+      before { graph.add_node('yummy', weight: 10) }
+      
+      it { expect(graph.nodes_size).to eql(length + 1) }
+    end
+
+    context 'when adding multiple nodes' do
+      let(:list) { 1..5 }
+      let!(:length) { graph.nodes_size }
+      before { graph.add_nodes(list, output: false) }
+
+      it { expect(graph.nodes_size).to eql(length + list.size) }
+    end
+
+  end
+
 end
