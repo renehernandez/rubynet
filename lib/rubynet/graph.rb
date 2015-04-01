@@ -106,6 +106,10 @@ module Rubynet
     end
 
     def add_edge(u, v, attr_dict = nil, **attr)
+      if u == v
+        raise RubynetError, 'Self loops are not allowed in a graph instance'
+      end
+
       if attr_dict.nil?
         attr_dict = attr
       else
@@ -126,7 +130,8 @@ module Rubynet
       end
 
       e_attr = self.adj[u].fetch(v, self.edge_factory).merge(attr_dict)
-      self.adj[u][v] = self.adj[v][u] = e_attr
+      self.adj[u][v] = e_attr
+      self.adj[v][u] = e_attr
     end
 
     def add_edges(_edges, **attr)
@@ -151,6 +156,10 @@ module Rubynet
     end
 
     def remove_edge(u, v)
+      if u == v
+        raise RubynetError, 'Self loops are not allowed'
+      end
+
       edge = self.adj[u].delete(v)
       edge &&= self.adj[v].delete(u) if u != v
       unless edge
