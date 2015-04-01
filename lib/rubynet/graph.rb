@@ -43,6 +43,10 @@ module Rubynet
       self.nodes.key?(_node)
     end
 
+    def edge?(u, v)
+      self.adj.key?(u) && self.adj[u].key?(v)
+    end
+
     def nodes_size
       self.nodes.size
     end
@@ -144,6 +148,23 @@ module Rubynet
                                     3-tuple', e: _edge)
         end
       end
+    end
+
+    def remove_edge(u, v)
+      edge = self.adj[u].delete(v)
+      edge &&= self.adj[v].delete(u) if u != v
+      unless edge
+        raise RubynetError, format('The edge <{u},{v}> is not in the graph',
+                                   u: u, v: v)
+      end
+    end
+
+    def remove_edges(_edges)
+      unless _edges.respond_to?(:each)
+        raise RubynetError, '_edges argument must respond to container each
+                            method'
+      end
+      _edges.each { |_edge| self.remove_edge(*_edge)}
     end
 
   end
