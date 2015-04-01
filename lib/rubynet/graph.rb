@@ -67,6 +67,8 @@ module Rubynet
         self.nodes[_node] = attr_dict
         self.adj[_node] = self.adj_factory
       end
+
+      self
     end
 
     def add_nodes(_nodes, **attr)
@@ -83,6 +85,7 @@ module Rubynet
         end
       end
 
+      self
     end
 
     def remove_node(_node)
@@ -94,6 +97,7 @@ module Rubynet
         self.adj[key].delete(_node)
       end
 
+      self
     end
 
     def remove_nodes(_nodes)
@@ -103,6 +107,8 @@ module Rubynet
       end
 
       _nodes.each {|_node| self.remove_node(_node) }
+
+      self
     end
 
     def add_edge(u, v, attr_dict = nil, **attr)
@@ -132,6 +138,8 @@ module Rubynet
       e_attr = self.adj[u].fetch(v, self.edge_factory).merge(attr_dict)
       self.adj[u][v] = e_attr
       self.adj[v][u] = e_attr
+
+      self
     end
 
     def add_edges(_edges, **attr)
@@ -153,6 +161,8 @@ module Rubynet
                                     3-tuple', e: _edge)
         end
       end
+
+      self
     end
 
     def remove_edge(u, v)
@@ -166,6 +176,8 @@ module Rubynet
         raise RubynetError, format('The edge <{u},{v}> is not in the graph',
                                    u: u, v: v)
       end
+
+      self
     end
 
     def remove_edges(_edges)
@@ -174,6 +186,8 @@ module Rubynet
                             method'
       end
       _edges.each { |_edge| self.remove_edge(*_edge)}
+
+      self
     end
 
   end
