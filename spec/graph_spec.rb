@@ -296,4 +296,20 @@ RSpec.describe Rubynet::Graph do
 
   end
 
+  describe '#edges_size' do
+    before { graph.add_edges([[1, 2], [2, 3], [1,5], [4, 6], [3, 1]])}
+
+    it { expect(graph.edges_size).to eql(5)}
+
+  end
+
+  describe '#degree' do
+    before { graph.add_edges([[1, 2], [1, 3], [3, 4], [4, 6], [1, 5]])}
+
+    it { expect(graph.degree(1)).to eql(3) }
+    it { expect(graph.degree(2)).to eql(1) }
+    it { expect { graph.degree(0) }.to raise_error}
+
+  end
+
 end

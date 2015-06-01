@@ -51,6 +51,18 @@ module Rubynet
       self.nodes.size
     end
 
+    def edges_size
+      self.nodes.map { |v, data| self.degree(v) }.reduce(:+) / 2
+    end
+
+    def degree(_node)
+      unless self.node?(_node)
+        raise RubynetError, '_node argument must present in the graph'
+      end
+
+      self.adj[_node].size
+    end
+
     def add_node(_node, attr_dict=nil,**attr)
       if attr_dict.nil?
         attr_dict = attr
