@@ -289,4 +289,11 @@ RSpec.describe Rubynet::Graph do
 
   end
 
+  describe '#neighbors' do
+    before { graph.add_edges([[1, 2], [2, 3], [1,5], [4, 6], [3, 1]])}
+
+    it { expect(graph.neighbors(1)).to eql([2, 5, 3]) }
+
+  end
+
 end

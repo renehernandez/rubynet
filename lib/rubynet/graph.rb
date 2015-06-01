@@ -190,6 +190,15 @@ module Rubynet
       self
     end
 
+    def neighbors(_node)
+
+      unless self.node?(_node)
+        raise RubynetError, '_node argument must be present in the graph'
+      end
+
+      self.adj[_node].map {|k, v| k }
+    end
+
   end
 
 end
